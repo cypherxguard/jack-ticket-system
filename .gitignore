@@ -1,0 +1,24 @@
+# Python Bytecode
+__pycache__/
+*.pyc
+
+# Virtual environment folder
+venv/
+
+# SQLite database file
+ticket_system.db
+
+# IDE or text editor folders
+.vscode/
+.idea/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Environment variables (e.g., for sensitive data like SMTP credentials)
+.env
+
+# Streamlit session state files
+*.csv
+*.xlsx
+
