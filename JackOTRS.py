@@ -6,15 +6,62 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import date
 from io import BytesIO
+import hashlib
 
-# -------------------------------------------------------------
-# Streamlit Page Configuration
-# -------------------------------------------------------------
+
 st.set_page_config(
     page_title="Ticket Management System",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# ----------------------------------------
+# Auth setup
+# ----------------------------------------
+USERS = {
+    "jack": "admin123",
+    "admin": "securepass"
+}
+
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+# Session setup
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "username" not in st.session_state:
+    st.session_state.username = ""
+
+# Login UI (only called after set_page_config)
+def login():
+    username = st.text_input("Username", key="login_user")
+    password = st.text_input("Password", type="password", key="login_pass")
+    if st.button("Login"):
+        if username in USERS and USERS[username] == password:
+            st.session_state.logged_in = True
+            st.session_state.username = username
+            st.success("Login successful!")
+        else:
+            st.error("Invalid username or password")
+
+# Logout logic
+def logout():
+    st.session_state.logged_in = False
+    st.session_state.username = ""
+    st.success("You have been logged out.")
+
+
+if not st.session_state.logged_in:
+    st.title("🔐 Login")
+    login()
+    st.stop()
+else:
+    with st.sidebar:
+        st.markdown("---")
+        st.markdown(f"👤 Logged in as: **{st.session_state.username}**")
+        if st.button("🚪 Logout"):
+            logout()
+            st.stop()
 
 # -------------------------------------------------------------
 # Custom CSS & FontAwesome for Icons
