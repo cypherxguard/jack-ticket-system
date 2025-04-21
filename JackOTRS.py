@@ -436,7 +436,7 @@ elif menu == "Upload Tickets":
                             str(row.get("court", "")).strip(),
                             str(row.get("notes", "")).strip(),
                             str(row.get("source", "")).strip(),
-                            str(row.get("other", "")).strip()
+                            str(row.get("other", "")).strip(),
                             None # for ticket image
                         )
                         insert_ticket(data)
