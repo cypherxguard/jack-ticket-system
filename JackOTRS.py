@@ -399,47 +399,29 @@ elif menu == "Add Ticket":
                 st.success("Ticket added successfully!")
 
 # -------------------------------------------------------------
-# Bulk Upload Tickets
+# Bulk Upload Tickets  (NEW: accepts any Excel format "as‑is")
 # -------------------------------------------------------------
 elif menu == "Upload Tickets":
-    st.title("Bulk Upload Tickets")
-    st.write("""
-        Upload an Excel (.xlsx) file containing the columns:
-        first_name, middle_name, last_name, court_date, citation_date, contact_date,
-         ticket_type, county, court, notes, source, other
-    """)
-    
+    st.title("Bulk Upload (Any Excel Format)")
+    st.write("Upload any .xlsx file – columns will be stored exactly as‑is.")
+
     uploaded_file = st.file_uploader("Choose an Excel file", type=["xlsx"])
     if uploaded_file:
         try:
-            df = pd.read_excel(uploaded_file)
-            required_cols = ["first_name", "last_name"]
-            missing_cols = [col for col in required_cols if col not in df.columns]
-            
-            if missing_cols:
-                st.error(f"Missing required columns: {', '.join(missing_cols)}")
-            else:
-                st.write("**Preview of Uploaded Data**")
-                st.dataframe(df)
-                if st.button("Upload Data"):
-                    for _, row in df.iterrows():
-                        data = (
-                            str(row.get("first_name", "")).strip(),
-                            str(row.get("middle_name", "")).strip(),
-                            str(row.get("last_name", "")).strip(),
-                            str(row.get("court_date", "")).strip(),
-                            str(row.get("citation_date", "")).strip(),
-                            str(row.get("contact_date", "")).strip(),
-                            str(row.get("ticket_type", "")).strip(),
-                            str(row.get("county", "")).strip(),
-                            str(row.get("court", "")).strip(),
-                            str(row.get("notes", "")).strip(),
-                            str(row.get("source", "")).strip(),
-                            str(row.get("other", "")).strip(),
-                            None # for ticket image
-                        )
-                        insert_ticket(data)
-                    st.success("Bulk upload successful!")
+            # Load Excel – treat first row as header if present, else generic headers
+            df = pd.read_excel(uploaded_file, header=0)
+            if df.columns.tolist()[0].startswith("Unnamed"):
+                # No headers present – generate Column 1, Column 2, ...
+                df.columns = [f"Column {i+1}" for i in range(len(df.columns))]
+
+            # Preview for Jack
+            st.write("**Preview of Uploaded Data**")
+            st.dataframe(df)
+
+            if st.button("Save Data"):
+                # Save raw data to a flexible table
+                df.to_sql("raw_uploads", conn, if_exists="append", index=False)
+                st.success("File imported and saved successfully!")
         except Exception as e:
             st.error(f"Error processing file: {e}")
 
