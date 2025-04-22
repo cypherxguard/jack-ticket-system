@@ -429,49 +429,54 @@ elif menu == "Upload Tickets":
 # View Data (Tickets or Raw Uploads)
 # -------------------------------------------------------------
 elif menu == "View Tickets":
+    from io import BytesIO   # <-- keeps it local, or add near top of file
     st.title("View Stored Data")
 
-    # Choose which table to display
+    # Toggle between structured tickets and raw uploads
     table_choice = st.radio(
         "Select dataset",
         ["Structured Tickets", "Raw Uploads"],
         horizontal=True
     )
-
     table_name = "tickets" if table_choice == "Structured Tickets" else "raw_uploads"
 
     try:
         df = pd.read_sql_query(f"SELECT * FROM {table_name}", conn)
         st.dataframe(df)
 
-        # Export to Excel for whichever table is being viewed
+        # ---------- Export to Excel ----------
         if not df.empty:
-            excel_data = df.to_excel(index=False, engine="xlsxwriter")
+            buffer = BytesIO()
+            df.to_excel(buffer, index=False, engine="xlsxwriter")
             st.download_button(
                 label="Export to Excel",
-                data=excel_data,
+                data=buffer.getvalue(),
                 file_name=f"{table_name}_export.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
 
-        # Delete only for tickets table (optional)
+        # ---------- Delete (only for structured tickets) ----------
         if table_name == "tickets" and not df.empty:
             st.write("---")
             st.subheader("Delete a Structured Ticket")
-            ticket_options = [(row["id"], f"ID {row['id']}: {row['first_name']} {row['last_name']}") 
-                              for _, row in df.iterrows()]
+            ticket_options = [
+                (row["id"], f"ID {row['id']}: {row['first_name']} {row['last_name']}")
+                for _, row in df.iterrows()
+            ]
             ticket_dict = dict(ticket_options)
             ticket_ids = [t[0] for t in ticket_options]
-            selected_ticket = st.selectbox("Select to delete", ticket_ids, format_func=lambda x: ticket_dict[x])
+            selected_ticket = st.selectbox(
+                "Select to delete", ticket_ids, format_func=lambda x: ticket_dict[x]
+            )
             if st.button("Delete Ticket"):
                 cursor.execute("DELETE FROM tickets WHERE id = ?", (selected_ticket,))
                 conn.commit()
                 st.success(f"Ticket {selected_ticket} deleted successfully!")
                 st.experimental_rerun()
-        elif table_name == "raw_uploads" and df.empty:
-            st.info("No raw uploads yet.")
-        elif table_name == "tickets" and df.empty:
-            st.info("No structured tickets yet.")
+
+        # Info messages when tables are empty
+        elif df.empty:
+            st.info("No data in this table yet.")
 
     except Exception as e:
         st.error(f"Error fetching data: {e}")
