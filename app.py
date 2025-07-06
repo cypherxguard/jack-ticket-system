@@ -6,7 +6,6 @@ Converted from Streamlit application for Render deployment
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import pandas as pd
 import sqlite3
@@ -16,8 +15,12 @@ from email.mime.multipart import MIMEMultipart
 from datetime import datetime, date, timedelta
 from io import BytesIO
 import os
-import hashlib
 from functools import wraps
+
+# Import auth system
+from auth.models import db, User
+from auth.routes import auth, login_required, admin_required
+from auth.utils import hash_password, verify_password
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
@@ -28,14 +31,13 @@ app.config['UPLOAD_FOLDER'] = 'uploads'
 # Ensure upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-db = SQLAlchemy(app)
+# Initialize database
+db.init_app(app)
 
-# Database Models
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(120), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+# Register auth blueprint
+app.register_blueprint(auth, url_prefix='/auth')
+
+# Database Models (Ticket-related only - User model is in auth.models)
 
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -59,53 +61,14 @@ class RawUpload(db.Model):
     data = db.Column(db.Text)  # JSON string of uploaded data
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-# Hardcoded users (same as original Streamlit app)
-USERS = {
-    "jack": "admin123",
-    "admin": "securepass"
-}
-
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
-
-# Authentication decorators
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'logged_in' not in session or not session['logged_in']:
-            flash('Please log in to access this page.', 'error')
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
+# Authentication is now handled by the auth blueprint
 
 # Routes
 @app.route('/')
 def index():
-    if 'logged_in' in session and session['logged_in']:
+    if 'user_id' in session:
         return redirect(url_for('dashboard'))
-    return redirect(url_for('login'))
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        
-        if username in USERS and USERS[username] == password:
-            session['logged_in'] = True
-            session['username'] = username
-            flash('Login successful!', 'success')
-            return redirect(url_for('dashboard'))
-        else:
-            flash('Invalid username or password', 'error')
-    
-    return render_template('login.html')
-
-@app.route('/logout')
-def logout():
-    session.clear()
-    flash('You have been logged out.', 'success')
-    return redirect(url_for('login'))
+    return redirect(url_for('auth.login'))
 
 @app.route('/dashboard')
 @login_required
@@ -326,22 +289,23 @@ def from_json_filter(data):
     except:
         return []
 
-# Initialize database and create default users
+# Initialize database and create default admin user
 def init_db():
     with app.app_context():
         db.create_all()
         
-        # Create default users if they don't exist
-        for username, password in USERS.items():
-            if not User.query.filter_by(username=username).first():
-                user = User(
-                    username=username,
-                    password_hash=hash_password(password)
-                )
-                db.session.add(user)
-        
-        db.session.commit()
-        print("Default users created: jack/admin123, admin/securepass")
+        # Create default admin user if it doesn't exist
+        if not User.query.filter_by(username='admin').first():
+            admin_user = User(
+                username='admin',
+                password_hash=hash_password('admin123'),
+                role='admin'
+            )
+            db.session.add(admin_user)
+            db.session.commit()
+            print("Default admin user created: admin/admin123")
+        else:
+            print("Admin user already exists")
 
 if __name__ == '__main__':
     init_db()

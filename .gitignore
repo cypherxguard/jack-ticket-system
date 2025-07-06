@@ -2,8 +2,11 @@
 __pycache__/
 *.pyc
 
-# Virtual environment folder
+# Virtual environment folders
+.venv/
 venv/
+env/
+ENV/
 
 # SQLite database file
 ticket_system.db
@@ -21,4 +24,3 @@ ticket_system.db
 # Streamlit session state files
 *.csv
 *.xlsx
-
