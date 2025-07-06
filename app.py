@@ -16,6 +16,8 @@ from datetime import datetime, date, timedelta
 from io import BytesIO
 import os
 from functools import wraps
+import random
+import string
 
 # Import auth system
 from auth.models import db, User
@@ -39,8 +41,21 @@ app.register_blueprint(auth, url_prefix='/auth')
 
 # Database Models (Ticket-related only - User model is in auth.models)
 
+def generate_unique_ticket_id():
+    """Generate a unique ticket ID in format TCKT-XXXXX"""
+    while True:
+        # Generate a random 5-digit number
+        number = random.randint(10000, 99999)
+        ticket_id = f"TCKT-{number}"
+        
+        # Check if this ID already exists
+        existing_ticket = Ticket.query.filter_by(ticket_id=ticket_id).first()
+        if not existing_ticket:
+            return ticket_id
+
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    ticket_id = db.Column(db.String(20), unique=True, nullable=False)  # Unique ticket ID like TCKT-45827
     first_name = db.Column(db.String(50), nullable=False)
     middle_name = db.Column(db.String(50))
     last_name = db.Column(db.String(50), nullable=False)
@@ -80,8 +95,12 @@ def dashboard():
 @login_required
 def add_ticket():
     if request.method == 'POST':
+        # Generate unique ticket ID
+        ticket_id = generate_unique_ticket_id()
+        
         # Handle ticket creation
         ticket = Ticket(
+            ticket_id=ticket_id,
             first_name=request.form['first_name'],
             middle_name=request.form['middle_name'],
             last_name=request.form['last_name'],
@@ -105,7 +124,7 @@ def add_ticket():
         db.session.add(ticket)
         db.session.commit()
         
-        flash('Ticket added successfully!', 'success')
+        flash(f'Ticket added successfully! Ticket ID: {ticket_id}', 'success')
         return redirect(url_for('view_tickets'))
     
     return render_template('add_ticket.html')
@@ -188,6 +207,7 @@ def export_tickets():
         data = []
         for ticket in tickets:
             data.append({
+                'Ticket ID': ticket.ticket_id,
                 'ID': ticket.id,
                 'First Name': ticket.first_name,
                 'Middle Name': ticket.middle_name,
