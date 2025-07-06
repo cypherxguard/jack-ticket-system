@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Ticket Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+        </h1>
+    </div>
+</div>
+
+<div class="hero">
+    <h1>Ticket Management System</h1>
+    <p>Your all-in-one solution for managing traffic tickets with ease and efficiency.</p>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="stats-card">
+            <div class="text-center">
+                <i class="fas fa-ticket-alt"></i>
+                <h3>{{ ticket_count }}</h3>
+                <p class="mb-0">Total Tickets</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stats-card" style="background: linear-gradient(135deg, #28a745, #20c997);">
+            <div class="text-center">
+                <i class="fas fa-user-check"></i>
+                <h3>{{ session.username.title() }}</h3>
+                <p class="mb-0">Logged In As</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stats-card" style="background: linear-gradient(135deg, #17a2b8, #6f42c1);">
+            <div class="text-center">
+                <i class="fas fa-calendar-check"></i>
+                <h3>{{ current_date.strftime('%Y-%m-%d') }}</h3>
+                <p class="mb-0">Today's Date</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-rocket me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <a href="{{ url_for('add_ticket') }}" class="btn btn-primary w-100 py-3">
+                            <i class="fas fa-plus fa-2x mb-2"></i><br>
+                            Add New Ticket
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <a href="{{ url_for('view_tickets') }}" class="btn btn-info w-100 py-3">
+                            <i class="fas fa-list fa-2x mb-2"></i><br>
+                            View All Tickets
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <a href="{{ url_for('upload_tickets') }}" class="btn btn-warning w-100 py-3">
+                            <i class="fas fa-upload fa-2x mb-2"></i><br>
+                            Upload Tickets
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <a href="{{ url_for('send_notification') }}" class="btn btn-success w-100 py-3">
+                            <i class="fas fa-envelope fa-2x mb-2"></i><br>
+                            Send Notification
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>System Info
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Logged in as:</strong><br>
+                    <span class="text-primary">{{ session.username }}</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Account Status:</strong><br>
+                    <span class="badge bg-success">Active</span>
+                </div>
+                <div>
+                    <strong>System Status:</strong><br>
+                    <span class="badge bg-success">Online</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>Getting Started
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Available Features:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Add new tickets with detailed information</li>
+                            <li><i class="fas fa-check text-success me-2"></i>View and manage existing tickets</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Upload Excel files for bulk processing</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Export ticket data to Excel</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Send email notifications</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Upload ticket images and documents</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Navigation:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-home text-primary me-2"></i><strong>Dashboard:</strong> Overview and quick actions</li>
+                            <li><i class="fas fa-plus text-primary me-2"></i><strong>Add Ticket:</strong> Create new ticket entries</li>
+                            <li><i class="fas fa-upload text-primary me-2"></i><strong>Upload Tickets:</strong> Bulk import from Excel</li>
+                            <li><i class="fas fa-list text-primary me-2"></i><strong>View Tickets:</strong> Browse and manage tickets</li>
+                            <li><i class="fas fa-envelope text-primary me-2"></i><strong>Send Notification:</strong> Email alerts</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

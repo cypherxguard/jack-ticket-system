@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Add Ticket - Ticket Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-plus me-2"></i>Add a New Ticket
+        </h1>
+        <p class="text-muted">Fill out the form below with the ticket details.</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="first_name" class="form-label">First Name *</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" maxlength="50" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="middle_name" class="form-label">Middle Name</label>
+                        <input type="text" class="form-control" id="middle_name" name="middle_name" maxlength="50">
+                    </div>
+                    <div class="mb-3">
+                        <label for="last_name" class="form-label">Last Name *</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" maxlength="50" required>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="court_date" class="form-label">Court Date</label>
+                        <input type="date" class="form-control" id="court_date" name="court_date">
+                    </div>
+                    <div class="mb-3">
+                        <label for="citation_date" class="form-label">Citation Date</label>
+                        <input type="date" class="form-control" id="citation_date" name="citation_date">
+                    </div>
+                    <div class="mb-3">
+                        <label for="contact_date" class="form-label">Contact Date</label>
+                        <input type="date" class="form-control" id="contact_date" name="contact_date">
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="ticket_type" class="form-label">Ticket Type</label>
+                        <input type="text" class="form-control" id="ticket_type" name="ticket_type" maxlength="50">
+                    </div>
+                    <div class="mb-3">
+                        <label for="county" class="form-label">County</label>
+                        <input type="text" class="form-control" id="county" name="county" maxlength="50">
+                    </div>
+                    <div class="mb-3">
+                        <label for="court" class="form-label">Court</label>
+                        <input type="text" class="form-control" id="court" name="court" maxlength="100">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="source" class="form-label">Source</label>
+                        <input type="text" class="form-control" id="source" name="source" maxlength="100">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="other" class="form-label">Other</label>
+                        <input type="text" class="form-control" id="other" name="other" maxlength="100">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <div class="mb-3">
+                        <label for="ticket_image" class="form-label">Upload Ticket Image</label>
+                        <input type="file" class="form-control" id="ticket_image" name="ticket_image" accept="image/*">
+                        <div class="form-text">Supported formats: JPG, PNG, JPEG</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save me-2"></i>Submit Ticket
+                    </button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-lg ms-2">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

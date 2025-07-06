@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Send Notification - Ticket Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-envelope me-2"></i>Send Email Notification
+        </h1>
+        <p class="text-muted">Fill in the SMTP settings and email details below to send a notification.</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="mb-3">SMTP Settings</h5>
+                    <div class="mb-3">
+                        <label for="smtp_server" class="form-label">SMTP Server</label>
+                        <input type="text" class="form-control" id="smtp_server" name="smtp_server" 
+                               value="smtp.example.com" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="smtp_port" class="form-label">SMTP Port</label>
+                        <input type="number" class="form-control" id="smtp_port" name="smtp_port" 
+                               value="587" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="smtp_username" class="form-label">SMTP Username</label>
+                        <input type="text" class="form-control" id="smtp_username" name="smtp_username" 
+                               value="your_username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="smtp_password" class="form-label">SMTP Password</label>
+                        <input type="password" class="form-control" id="smtp_password" name="smtp_password" 
+                               value="your_password" required>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5 class="mb-3">Email Content</h5>
+                    <div class="mb-3">
+                        <label for="recipient" class="form-label">Recipient Email</label>
+                        <input type="email" class="form-control" id="recipient" name="recipient" 
+                               value="recipient@example.com" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">Email Subject</label>
+                        <input type="text" class="form-control" id="subject" name="subject" 
+                               value="Ticket Milestone Notification" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Email Message</label>
+                        <textarea class="form-control" id="message" name="message" rows="6" 
+                                  required>A milestone has been reached in your ticket system.</textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-paper-plane me-2"></i>Send Notification
+                    </button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-lg ms-2">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>SMTP Configuration Help
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Common SMTP Settings:</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Gmail:</strong> smtp.gmail.com:587</li>
+                            <li><strong>Outlook:</strong> smtp-mail.outlook.com:587</li>
+                            <li><strong>Yahoo:</strong> smtp.mail.yahoo.com:587</li>
+                            <li><strong>iCloud:</strong> smtp.mail.me.com:587</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Security Notes:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-shield-alt text-success me-2"></i>Use TLS/SSL encryption</li>
+                            <li><i class="fas fa-key text-warning me-2"></i>App passwords may be required</li>
+                            <li><i class="fas fa-lock text-info me-2"></i>Enable 2FA for better security</li>
+                            <li><i class="fas fa-exclamation-triangle text-danger me-2"></i>Never share credentials</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
