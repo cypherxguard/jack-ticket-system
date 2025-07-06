@@ -167,6 +167,15 @@ def delete_ticket(ticket_id):
     flash('Ticket deleted successfully!', 'success')
     return redirect(url_for('view_tickets'))
 
+@app.route('/delete_raw_upload/<int:upload_id>', methods=['POST'])
+@login_required
+def delete_raw_upload(upload_id):
+    upload = RawUpload.query.get_or_404(upload_id)
+    db.session.delete(upload)
+    db.session.commit()
+    flash('Raw upload deleted successfully!', 'success')
+    return redirect(url_for('view_tickets', table='raw'))
+
 @app.route('/export_tickets')
 @login_required
 def export_tickets():

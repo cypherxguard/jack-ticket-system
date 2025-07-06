@@ -172,6 +172,7 @@
                             <th>ID</th>
                             <th>Upload Date</th>
                             <th>Data Preview</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -188,6 +189,14 @@
                                    class="btn btn-sm btn-outline-warning" target="_blank">
                                     <i class="fas fa-bug me-2"></i>Debug
                                 </a>
+                            </td>
+                            <td>
+                                <form method="POST" action="{{ url_for('delete_raw_upload', upload_id=upload.id) }}" 
+                                      style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this raw upload?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                         
