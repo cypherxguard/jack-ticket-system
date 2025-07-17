@@ -88,7 +88,7 @@ class TicketReminder(db.Model):
     sent = db.Column(db.Boolean, default=False)
     scheduled_date = db.Column(db.Date)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    ticket = db.relationship('Ticket', backref=db.backref('reminders', lazy=True))
+    ticket = db.relationship('Ticket', backref=db.backref('reminders', lazy=True, cascade="all, delete-orphan"))
 
 # Authentication is now handled by the auth blueprint
 
