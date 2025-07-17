@@ -81,7 +81,7 @@
                                 </form>
                                 {% for reminder in ticket.reminders %}
                                     {% set days_left = (reminder.scheduled_date - current_date.date()).days %}
-                                    {% if not reminder.sent and reminder.scheduled_date <= current_date.date() %}
+                                    {% if not reminder.sent %}
                                         <form method="POST" action="{{ url_for('send_reminder_now', reminder_id=reminder.id) }}" style="display:inline;">
                                             <button type="submit" class="btn btn-sm btn-outline-warning" title="Send Reminder Now">
                                                 <i class="fas fa-bell"></i> Send Now
@@ -91,11 +91,11 @@
                                             <span class="badge bg-warning text-dark ms-1">Reminder Due Today</span>
                                         {% elif days_left < 0 %}
                                             <span class="badge bg-warning text-dark ms-1">Reminder Due (Overdue by {{ -days_left }} days)</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary ms-1">Reminder Scheduled (Due in {{ days_left }} days)</span>
                                         {% endif %}
-                                    {% elif reminder.sent %}
-                                        <span class="badge bg-success ms-1">Reminder Sent</span>
                                     {% else %}
-                                        <span class="badge bg-secondary ms-1">Reminder Scheduled (Due in {{ days_left }} days)</span>
+                                        <span class="badge bg-success ms-1">Reminder Sent</span>
                                     {% endif %}
                                 {% endfor %}
                             </td>
