@@ -76,6 +76,20 @@ class RawUpload(db.Model):
     data = db.Column(db.Text)  # JSON string of uploaded data
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+class TicketReminder(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ticket_id = db.Column(db.Integer, db.ForeignKey('ticket.id'), nullable=False)
+    reminder_days_before = db.Column(db.Integer, nullable=False, default=0)
+    recipient_email = db.Column(db.String(120), nullable=False)
+    smtp_server = db.Column(db.String(120), nullable=False)
+    smtp_port = db.Column(db.Integer, nullable=False)
+    smtp_username = db.Column(db.String(120), nullable=False)
+    smtp_password = db.Column(db.String(120), nullable=False)
+    sent = db.Column(db.Boolean, default=False)
+    scheduled_date = db.Column(db.Date)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    ticket = db.relationship('Ticket', backref=db.backref('reminders', lazy=True))
+
 # Authentication is now handled by the auth blueprint
 
 # Routes
@@ -124,6 +138,29 @@ def add_ticket():
         db.session.add(ticket)
         db.session.commit()
         
+        # --- Reminder scheduling logic ---
+        reminder_days_before = int(request.form.get('reminder_days_before', 0))
+        recipient_email = request.form.get('reminder_email')
+        smtp_server = request.form.get('smtp_server')
+        smtp_port = int(request.form.get('smtp_port', 587))
+        smtp_username = request.form.get('smtp_username')
+        smtp_password = request.form.get('smtp_password')
+        if ticket.court_date and recipient_email and smtp_server and smtp_port and smtp_username and smtp_password:
+            scheduled_date = ticket.court_date - timedelta(days=reminder_days_before)
+            reminder = TicketReminder(
+                ticket_id=ticket.id,
+                reminder_days_before=reminder_days_before,
+                recipient_email=recipient_email,
+                smtp_server=smtp_server,
+                smtp_port=smtp_port,
+                smtp_username=smtp_username,
+                smtp_password=smtp_password,
+                scheduled_date=scheduled_date
+            )
+            db.session.add(reminder)
+            db.session.commit()
+        # --- End reminder scheduling ---
+        
         flash(f'Ticket added successfully! Ticket ID: {ticket_id}', 'success')
         return redirect(url_for('view_tickets'))
     
@@ -171,11 +208,11 @@ def view_tickets():
     if table_choice == 'tickets':
         tickets = Ticket.query.order_by(Ticket.created_at.desc()).all()
         raw_uploads = []
-        return render_template('view_tickets.html', tickets=tickets, raw_uploads=raw_uploads, table_choice=table_choice)
+        return render_template('view_tickets.html', tickets=tickets, raw_uploads=raw_uploads, table_choice=table_choice, current_date=datetime.now())
     else:
         tickets = []
         raw_uploads = RawUpload.query.order_by(RawUpload.created_at.desc()).all()
-        return render_template('view_tickets.html', tickets=tickets, raw_uploads=raw_uploads, table_choice=table_choice)
+        return render_template('view_tickets.html', tickets=tickets, raw_uploads=raw_uploads, table_choice=table_choice, current_date=datetime.now())
 
 @app.route('/delete_ticket/<int:ticket_id>', methods=['POST'])
 @login_required
@@ -305,6 +342,42 @@ def send_notification():
     
     return render_template('send_notification.html')
 
+@app.route('/send_reminder_now/<int:reminder_id>', methods=['POST'])
+@login_required
+def send_reminder_now(reminder_id):
+    reminder = TicketReminder.query.get_or_404(reminder_id)
+    if reminder.sent:
+        flash('Reminder already sent.', 'info')
+        return redirect(url_for('view_tickets'))
+    ticket = reminder.ticket
+    subject = f"Court Date Reminder: {ticket.ticket_id}"
+    message = f"This is a reminder that ticket {ticket.ticket_id} has a court date on {ticket.court_date}."
+    smtp_server = reminder.smtp_server
+    smtp_port = reminder.smtp_port
+    smtp_username = reminder.smtp_username
+    smtp_password = reminder.smtp_password
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = smtp_username
+        msg['To'] = reminder.recipient_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(message, 'plain'))
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(smtp_username, smtp_password)
+        server.send_message(msg)
+        server.quit()
+        reminder.sent = True
+        db.session.commit()
+        flash('Reminder sent successfully!', 'success')
+    except Exception as e:
+        error_msg = str(e)
+        if 'Username and Password not accepted' in error_msg or '5.7.8' in error_msg:
+            flash('Failed to send reminder: Gmail rejected your credentials. Please use an App Password and ensure 2-Step Verification is enabled. See https://support.google.com/mail/?p=BadCredentials', 'error')
+        else:
+            flash(f'Failed to send reminder: {e}', 'error')
+    return redirect(url_for('view_tickets'))
+
 # Jinja2 filters
 @app.template_filter('from_json')
 def from_json_filter(data):
@@ -335,6 +408,33 @@ def init_db():
             print("Default admin user created: admin/admin123")
         else:
             print("Admin user already exists")
+
+def send_due_reminders():
+    today = datetime.utcnow().date()
+    reminders = TicketReminder.query.filter_by(sent=False).filter(TicketReminder.scheduled_date <= today).all()
+    for reminder in reminders:
+        ticket = reminder.ticket
+        subject = f"Court Date Reminder: {ticket.ticket_id}"
+        message = f"This is a reminder that ticket {ticket.ticket_id} has a court date on {ticket.court_date}."
+        smtp_server = reminder.smtp_server
+        smtp_port = reminder.smtp_port
+        smtp_username = reminder.smtp_username
+        smtp_password = reminder.smtp_password
+        try:
+            msg = MIMEMultipart()
+            msg['From'] = smtp_username
+            msg['To'] = reminder.recipient_email
+            msg['Subject'] = subject
+            msg.attach(MIMEText(message, 'plain'))
+            server = smtplib.SMTP(smtp_server, smtp_port)
+            server.starttls()
+            server.login(smtp_username, smtp_password)
+            server.send_message(msg)
+            server.quit()
+            reminder.sent = True
+            db.session.commit()
+        except Exception as e:
+            print(f"Failed to send reminder for ticket {ticket.ticket_id}: {e}")
 
 if __name__ == '__main__':
     init_db()

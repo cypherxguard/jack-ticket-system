@@ -37,6 +37,32 @@
                         <input type="date" class="form-control" id="court_date" name="court_date">
                     </div>
                     <div class="mb-3">
+                        <label for="reminder_days_before" class="form-label">Remind me (days before court date)</label>
+                        <input type="number" class="form-control" id="reminder_days_before" name="reminder_days_before" min="0" max="90" value="20">
+                    </div>
+                    <div class="mb-3">
+                        <label for="reminder_email" class="form-label">Reminder Email</label>
+                        <input type="email" class="form-control" id="reminder_email" name="reminder_email" placeholder="recipient@example.com">
+                    </div>
+                    <div id="smtp_settings_group" style="display:none;">
+                        <div class="mb-3">
+                            <label for="smtp_server" class="form-label">SMTP Server</label>
+                            <input type="text" class="form-control" id="smtp_server" name="smtp_server" value="smtp.gmail.com">
+                        </div>
+                        <div class="mb-3">
+                            <label for="smtp_port" class="form-label">SMTP Port</label>
+                            <input type="number" class="form-control" id="smtp_port" name="smtp_port" value="587">
+                        </div>
+                        <div class="mb-3">
+                            <label for="smtp_username" class="form-label">SMTP Username (Gmail address)</label>
+                            <input type="text" class="form-control" id="smtp_username" name="smtp_username" placeholder="your@gmail.com">
+                        </div>
+                        <div class="mb-3">
+                            <label for="smtp_password" class="form-label">SMTP Password (App password)</label>
+                            <input type="password" class="form-control" id="smtp_password" name="smtp_password" placeholder="App password">
+                        </div>
+                    </div>
+                    <div class="mb-3">
                         <label for="citation_date" class="form-label">Citation Date</label>
                         <input type="date" class="form-control" id="citation_date" name="citation_date">
                     </div>
@@ -109,4 +135,31 @@
         </form>
     </div>
 </div>
+{% endblock %} 
+
+{% block scripts %}
+<script>
+// Show/hide SMTP fields if reminder email is set
+function toggleSmtpFields() {
+    var email = document.getElementById('reminder_email').value;
+    var group = document.getElementById('smtp_settings_group');
+    if (email) {
+        group.style.display = '';
+        document.getElementById('smtp_server').required = true;
+        document.getElementById('smtp_port').required = true;
+        document.getElementById('smtp_username').required = true;
+        document.getElementById('smtp_password').required = true;
+    } else {
+        group.style.display = 'none';
+        document.getElementById('smtp_server').required = false;
+        document.getElementById('smtp_port').required = false;
+        document.getElementById('smtp_username').required = false;
+        document.getElementById('smtp_password').required = false;
+    }
+}
+document.getElementById('reminder_email').addEventListener('input', toggleSmtpFields);
+document.addEventListener('DOMContentLoaded', function() {
+    toggleSmtpFields();
+});
+</script>
 {% endblock %} 
